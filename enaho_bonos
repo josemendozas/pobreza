@@ -1,0 +1,254 @@
+
+******************************************************
+*						 2020	   					 *
+******************************************************
+
+use "/Volumes/HV620S/Bases/ENAHO/2020/sumaria-2020", clear
+
+gen fac2 = factor07*mieperho
+
+svyset conglome [pweight = fac2], strata(estrato)
+
+gen rural = (inlist(estrato,6,7,8))
+
+gen dpto = substr(ubigeo,1,2)
+destring(dpto), replace
+
+gen prov = substr(ubigeo,1,4)
+
+gen lima = (dpto == 7 | prov == "1501")
+
+gen pov = (inlist(pobreza,1,2))
+
+gen pov_x = (inlist(pobreza,1))
+
+* Bonos yo me quedo en casa, bono independiente, bono rural, bono familiar universal
+egen bonos = rowtotal(ingtpu06 ingtpu07 ingtpu08 ingtpu09)
+replace bonos = -bonos
+
+egen bono_s_ymqnc = rowtotal(ingtpu07 ingtpu08 ingtpu09)
+replace bono_s_ymqnc = -bono_s_ymqnc
+
+egen bono_s_ind = rowtotal(ingtpu06 ingtpu08 ingtpu09)
+replace bono_s_ind = -bono_s_ind
+
+egen bono_s_rur = rowtotal(ingtpu06 ingtpu07 ingtpu09)
+replace bono_s_rur = -bono_s_rur
+
+egen bono_s_uni = rowtotal(ingtpu06 ingtpu07 ingtpu08)
+replace bono_s_uni = -bono_s_uni
+
+egen gasto_sinbono = rowtotal(gashog2d bonos)
+
+egen gasto_conymqnc = rowtotal(gashog2d bono_s_ymqnc)
+
+egen gasto_conind = rowtotal(gashog2d bono_s_ind)
+
+egen gasto_conrur = rowtotal(gashog2d bono_s_rur)
+
+egen gasto_conuni = rowtotal(gashog2d bono_s_uni)
+
+gen bono_ymqnc = ingtpu06
+
+gen bono_ind = ingtpu07
+
+gen bono_rur = ingtpu08
+
+gen bono_uni = ingtpu09
+
+
+gen gasto_pc_m = gashog2d/(mieperho*12*ld)
+
+gen gasto_pc_m_sinbono = gasto_sinbono/(mieperho*12*ld)
+
+gen gasto_pc_m_bono_ymqnc = gasto_conymqnc/(mieperho*12*ld)
+
+gen gasto_pc_m_bono_ind = gasto_conind/(mieperho*12*ld)
+
+gen gasto_pc_m_bono_rur = gasto_conrur/(mieperho*12*ld)
+
+gen gasto_pc_m_bono_uni = gasto_conuni/(mieperho*12*ld)
+
+gen ingreso_pc_m = inghog2d/(mieperho*12*ld)
+
+gen lineald = linea/ld
+
+gen linpeld = linpe/ld
+
+gen pov_sinbono = (gasto_pc_m_sinbono < lineald)
+gen pov_bono_ymqnc = (gasto_pc_m_bono_ymqnc < lineald)
+gen pov_bono_ind = (gasto_pc_m_bono_ind < lineald)
+gen pov_bono_rur = (gasto_pc_m_bono_rur < lineald)
+gen pov_bono_uni = (gasto_pc_m_bono_uni < lineald)
+
+gen pov_x_sinbono = (gasto_pc_m_sinbono < linpeld)
+gen pov_x_bono_ymqnc = (gasto_pc_m_bono_ymqnc < linpeld)
+gen pov_x_bono_ind = (gasto_pc_m_bono_ind < linpeld)
+gen pov_x_bono_rur = (gasto_pc_m_bono_rur < linpeld)
+gen pov_x_bono_uni = (gasto_pc_m_bono_uni < linpeld)
+
+******************************************************
+*	stats
+******************************************************
+
+eststo clear
+eststo: svy: mean pov 
+eststo: svy: mean pov , over(rural)
+eststo: svy: mean pov , over(dpto)
+eststo: svy: mean pov , over(lima)
+
+eststo: svy: mean pov_x 
+eststo: svy: mean pov_x , over(rural)
+eststo: svy: mean pov_x , over(dpto)
+eststo: svy: mean pov_x , over(lima)
+
+eststo: svy: mean pov_sinbono
+eststo: svy: mean pov_sinbono, over(rural)
+eststo: svy: mean pov_sinbono, over(dpto)
+eststo: svy: mean pov_sinbono, over(lima)
+
+eststo: svy: mean pov_x_sinbono 
+eststo: svy: mean pov_x_sinbono , over(rural)
+eststo: svy: mean pov_x_sinbono , over(dpto)
+eststo: svy: mean pov_x_sinbono , over(lima)
+
+eststo: svy: mean pov_bono_ymqnc 
+eststo: svy: mean pov_bono_ymqnc , over(rural)
+eststo: svy: mean pov_bono_ymqnc , over(dpto)
+eststo: svy: mean pov_bono_ymqnc , over(lima)
+
+eststo: svy: mean pov_bono_ind 
+eststo: svy: mean pov_bono_ind , over(rural)
+eststo: svy: mean pov_bono_ind , over(dpto)
+eststo: svy: mean pov_bono_ind , over(lima)
+
+eststo: svy: mean pov_bono_rur
+eststo: svy: mean pov_bono_rur , over(rural)
+eststo: svy: mean pov_bono_rur , over(dpto)
+eststo: svy: mean pov_bono_rur , over(lima)
+
+eststo: svy: mean pov_bono_uni
+eststo: svy: mean pov_bono_uni , over(rural)
+eststo: svy: mean pov_bono_uni , over(dpto)
+eststo: svy: mean pov_bono_uni , over(lima)
+
+eststo: svy: mean pov_x_bono_ymqnc 
+eststo: svy: mean pov_x_bono_ymqnc , over(rural)
+eststo: svy: mean pov_x_bono_ymqnc , over(dpto)
+eststo: svy: mean pov_x_bono_ymqnc , over(lima)
+
+eststo: svy: mean pov_x_bono_ind 
+eststo: svy: mean pov_x_bono_ind , over(rural)
+eststo: svy: mean pov_x_bono_ind , over(dpto)
+eststo: svy: mean pov_x_bono_ind , over(lima)
+
+eststo: svy: mean pov_x_bono_rur
+eststo: svy: mean pov_x_bono_rur , over(rural)
+eststo: svy: mean pov_x_bono_rur , over(dpto)
+eststo: svy: mean pov_x_bono_rur , over(lima)
+
+eststo: svy: mean pov_x_bono_uni
+eststo: svy: mean pov_x_bono_uni , over(rural)
+eststo: svy: mean pov_x_bono_uni , over(dpto)
+eststo: svy: mean pov_x_bono_uni , over(lima)
+
+estout using "/Users/joseantoniomendozasanchez/Dropbox/Projects/IEP/Tax/Data/SUNAT/enaho2020_stats_1.csv", replace 
+
+******************************************************
+*						 2019	   					 *
+******************************************************
+
+use "/Volumes/HV620S/Bases/ENAHO/2019/sumaria-2019", clear
+
+gen fac2 = factor07*mieperho
+
+svyset conglome [pweight = fac2], strata(estrato)
+
+gen rural = (inlist(estrato,6,7,8))
+
+gen dpto = substr(ubigeo,1,2)
+destring(dpto), replace
+
+gen prov = substr(ubigeo,1,4)
+
+gen lima = (dpto == 7 | prov == "1501")
+
+gen pov = (inlist(pobreza,1,2))
+
+gen pov_x = (inlist(pobreza,1))
+
+gen gasto_pc_m = gashog2d/(mieperho*12*ld)
+
+gen ingreso_pc_m = inghog2d/(mieperho*12*ld)
+
+gen lineald = linea/ld
+
+gen linpeld = linpe/ld
+
+******************************************************
+*	stats
+******************************************************
+
+eststo clear
+eststo: svy: mean pov 
+eststo: svy: mean pov , over(rural)
+eststo: svy: mean pov , over(dpto)
+eststo: svy: mean pov , over(lima)
+
+eststo: svy: mean pov_x 
+eststo: svy: mean pov_x , over(rural)
+eststo: svy: mean pov_x , over(dpto)
+eststo: svy: mean pov_x , over(lima)
+
+estout using "/Users/joseantoniomendozasanchez/Dropbox/Projects/IEP/Tax/Data/SUNAT/enaho2019_stats_1.csv", replace 
+
+
+
+******************************************************
+*						 2020	   					 *
+******************************************************
+
+use "/Volumes/HV620S/Bases/ENAHO/2020/sumaria-2020", clear
+
+gen fac2 = factor07*mieperho
+
+svyset conglome [pweight = fac2], strata(estrato)
+
+gen rural = (inlist(estrato,6,7,8))
+
+gen dpto = substr(ubigeo,1,2)
+destring(dpto), replace
+
+gen prov = substr(ubigeo,1,4)
+
+collapse (sum) fac2 ,by(dpto rural)
+
+reshape wide fac2, j(rural) i(dpto)
+
+rename (fac20 fac21) (n_ub n_ru)
+
+egen n_tot = rowtotal(n_ub n_ru)
+
+gen s_ub = n_ub*100/n_tot
+gen s_ru = n_ru*100/n_tot
+
+export excel using "/Users/joseantoniomendozasanchez/Dropbox/Projects/IEP/Tax/Data/SUNAT/enaho2020_rural.xlsx", firstrow(variables) replace
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
